@@ -47,13 +47,15 @@ public class Pong {
         double xVel = r.nextDouble() - 0.5;
         double yVel = r.nextDouble() - 0.5;
         double mag = Math.pow(Math.pow(xVel, 2) + Math.pow(yVel, 2), 1.0/2.0);
-        xVel /= mag;
-        yVel /= mag;
+        //xVel /= mag;
+        //yVel /= mag;
+        xVel = -0.5682359483870596;
+        yVel = 0.8228656676278692;
+
         ball = new Ball(WIDTH/2.0, HEIGHT/2.0, xVel*2, yVel*2);
         System.out.println(ball.getXPos() + " " + ball.getYPos());
         System.out.println(xVel + " " + yVel);
-        circle.setLayoutX(ball.getXPos());
-        circle.setLayoutY(ball.getXPos());
+        circle.relocate(ball.getXPos(), ball.getYPos());
         AnimationTimer at = new AnimationTimer() {
             private long startTime = -1;
             private long nextTime = 0;
@@ -68,15 +70,14 @@ public class Pong {
                                 ball.getYPos() <= leftPaddle.getLayoutY() + leftPaddle.getHeight())
                             ball.bounceOffPaddle();
                     }
-                    if (ball.getXPos() >= WIDTH -15) {
+                    if (ball.getXPos() >= WIDTH - 15) {
                         if(ball.getYPos() >= rightPaddle.getLayoutY() &&
                                 ball.getYPos() <= rightPaddle.getLayoutY() + rightPaddle.getHeight())
                             ball.bounceOffPaddle();
                     }
                     leftPaddle.setLayoutY(player1.getYPos());
                     rightPaddle.setLayoutY(player2.getYPos());
-                    circle.setLayoutX(ball.getXPos());
-                    circle.setLayoutY(ball.getXPos());
+                    circle.relocate(ball.getXPos(), ball.getYPos());
                     nextTime = now + 10;
                 }
             }
