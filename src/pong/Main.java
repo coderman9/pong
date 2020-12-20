@@ -14,11 +14,9 @@ public class Main extends Application {
         Parent root = loader.load();
         primaryStage.setTitle("Pong");
         Pong p = loader.getController();
-        p.startRound();
+        p.startRound(root);
         primaryStage.setScene(new Scene(root, 1211, 600));
         primaryStage.show();
-
-
     }
 
 

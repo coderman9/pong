@@ -2,9 +2,11 @@ package pong;
 
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 public class Pong {
 
@@ -22,6 +24,8 @@ public class Pong {
 
     private final double HEIGHT = 590;
     private final double WIDTH = 1211;
+
+    double currentYPos = 0;
 
     public Pong(){
         player1 = new HumanPlayer();
@@ -43,14 +47,14 @@ public class Pong {
         circle.setRadius(10);
     }
 
-    public void startRound(){
+    public boolean startRound(Node root) throws InterruptedException {
         double xVel = r.nextDouble() - 0.5;
         double yVel = r.nextDouble() - 0.5;
         double mag = Math.pow(Math.pow(xVel, 2) + Math.pow(yVel, 2), 1.0/2.0);
-        //xVel /= mag;
-        //yVel /= mag;
-        xVel = -0.5682359483870596;
-        yVel = 0.8228656676278692;
+        xVel /= mag;
+        yVel /= mag;
+
+        root.setOnMouseMoved(event -> currentYPos = event.getY());
 
         ball = new Ball(WIDTH/2.0, HEIGHT/2.0, xVel*2, yVel*2);
         System.out.println(ball.getXPos() + " " + ball.getYPos());
@@ -64,6 +68,34 @@ public class Pong {
                 if(startTime < 0) startTime = now;
                 if(now > nextTime){
                     ball.update();
+                    if(ball.getXPos() <= 0)
+                    {
+                        player2.addPoint();
+                        this.stop();
+                        if(player2.getPoints() == 11)
+                            end();
+                        else {
+                            try {
+                                startRound(root);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    if(ball.getXPos() >= WIDTH)
+                    {
+                        player1.addPoint();
+                        this.stop();
+                        if(player1.getPoints() == 11)
+                            end();
+                        else {
+                            try {
+                                startRound(root);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                     if(ball.getYPos() <= 0 || ball.getYPos() >= HEIGHT) ball.bounceOffWall();
                     if (ball.getXPos() <= 15) {
                         if(ball.getYPos() >= leftPaddle.getLayoutY() &&
@@ -71,18 +103,24 @@ public class Pong {
                             ball.bounceOffPaddle();
                     }
                     if (ball.getXPos() >= WIDTH - 15) {
-                        if(ball.getYPos() >= rightPaddle.getLayoutY() &&
-                                ball.getYPos() <= rightPaddle.getLayoutY() + rightPaddle.getHeight())
+                        if(ball.getYPos() >= rightPaddle.getLayoutY()) //&&
+                                //ball.getYPos() <= rightPaddle.getLayoutY() + rightPaddle.getHeight())
                             ball.bounceOffPaddle();
                     }
-                    leftPaddle.setLayoutY(player1.getYPos());
+                    leftPaddle.relocate(10, currentYPos);
                     rightPaddle.setLayoutY(player2.getYPos());
                     circle.relocate(ball.getXPos(), ball.getYPos());
                     nextTime = now + 10;
                 }
             }
         };
-
         at.start();
+        if(player1.getPoints() == 11 || player2.getPoints() == 11)
+            return true;
+        return false;
+    }
+
+    void end(){
+        System.out.println("Player " + (player1.getPoints() == 11 ? 1 : 2) + " is the winner");
     }
 }
