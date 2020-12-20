@@ -4,6 +4,12 @@ public class HumanPlayer implements Player {
 
     int points = 0;
 
+    Ball ball;
+
+    public void setBall(Ball ball) {
+        this.ball = ball;
+    }
+
     @Override
     public double getYPos() {
         return 0;

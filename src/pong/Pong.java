@@ -25,12 +25,14 @@ public class Pong {
     private final double HEIGHT = 590;
     private final double WIDTH = 1211;
 
+    private final int WIN_SCORE = 5;
+
     double currentYPos = 0;
 
     public Pong(){
+        r = new Random();
         player1 = new HumanPlayer();
         player2 = new AIPlayer();
-        r = new Random();
     }
 
     public void initialize(){
@@ -48,18 +50,22 @@ public class Pong {
     }
 
     public boolean startRound(Node root) throws InterruptedException {
+
+        System.out.println("Player 1: " + player1.getPoints());
+        System.out.println("Player 2: " + player2.getPoints());
+
         double xVel = r.nextDouble() - 0.5;
         double yVel = r.nextDouble() - 0.5;
         double mag = Math.pow(Math.pow(xVel, 2) + Math.pow(yVel, 2), 1.0/2.0);
         xVel /= mag;
         yVel /= mag;
+        ball = new Ball(WIDTH/2.0, HEIGHT/2.0, xVel*2, yVel*2);
+        player2.setBall(ball);
+
+        circle.relocate(ball.getXPos(), ball.getYPos());
 
         root.setOnMouseMoved(event -> currentYPos = event.getY());
 
-        ball = new Ball(WIDTH/2.0, HEIGHT/2.0, xVel*2, yVel*2);
-        System.out.println(ball.getXPos() + " " + ball.getYPos());
-        System.out.println(xVel + " " + yVel);
-        circle.relocate(ball.getXPos(), ball.getYPos());
         AnimationTimer at = new AnimationTimer() {
             private long startTime = -1;
             private long nextTime = 0;
@@ -72,7 +78,7 @@ public class Pong {
                     {
                         player2.addPoint();
                         this.stop();
-                        if(player2.getPoints() == 11)
+                        if(player2.getPoints() == WIN_SCORE)
                             end();
                         else {
                             try {
@@ -86,7 +92,7 @@ public class Pong {
                     {
                         player1.addPoint();
                         this.stop();
-                        if(player1.getPoints() == 11)
+                        if(player1.getPoints() == WIN_SCORE)
                             end();
                         else {
                             try {
@@ -97,30 +103,33 @@ public class Pong {
                         }
                     }
                     if(ball.getYPos() <= 0 || ball.getYPos() >= HEIGHT) ball.bounceOffWall();
-                    if (ball.getXPos() <= 15) {
+                    if (ball.getXPos() <= 10) {
                         if(ball.getYPos() >= leftPaddle.getLayoutY() &&
                                 ball.getYPos() <= leftPaddle.getLayoutY() + leftPaddle.getHeight())
                             ball.bounceOffPaddle();
                     }
-                    if (ball.getXPos() >= WIDTH - 15) {
-                        if(ball.getYPos() >= rightPaddle.getLayoutY()) //&&
-                                //ball.getYPos() <= rightPaddle.getLayoutY() + rightPaddle.getHeight())
+                    if (ball.getXPos() >= WIDTH - 10) {
+                        if(ball.getYPos() >= rightPaddle.getLayoutY() &&
+                                ball.getYPos() <= rightPaddle.getLayoutY() + rightPaddle.getHeight())
                             ball.bounceOffPaddle();
                     }
                     leftPaddle.relocate(10, currentYPos);
-                    rightPaddle.setLayoutY(player2.getYPos());
+                    if(rightPaddle.getLayoutY() != player2.getYPos()){
+                        rightPaddle.setLayoutY(rightPaddle.getLayoutY() + 1.4*(player2.getYPos() > rightPaddle.getLayoutY() ? 1 : -1));
+                    }
                     circle.relocate(ball.getXPos(), ball.getYPos());
-                    nextTime = now + 10;
+                    nextTime = now + 1;
                 }
             }
         };
         at.start();
-        if(player1.getPoints() == 11 || player2.getPoints() == 11)
+        if(player1.getPoints() == WIN_SCORE || player2.getPoints() == WIN_SCORE)
             return true;
         return false;
     }
 
     void end(){
-        System.out.println("Player " + (player1.getPoints() == 11 ? 1 : 2) + " is the winner");
+        System.out.println("Player 1: " + player1.getPoints());
+        System.out.println("Player 2: " + player2.getPoints());
     }
 }
